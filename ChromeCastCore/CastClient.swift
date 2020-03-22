@@ -378,7 +378,6 @@ final class CastRequest: NSObject {
     }
     
     // MARK: - Public messages
-    
     public func launch(appId: CastAppIdentifier, completion: @escaping (CastError?, CastApp?) -> Void) {
         let payload: [String: Any] = [
             CastJSONPayloadKeys.type: CastMessageType.launch.rawValue,
@@ -436,6 +435,8 @@ final class CastRequest: NSObject {
         }
     }
     
+    
+    // MARK: - Playback Controls
     @nonobjc public func stop(app: CastApp) {
         let payload: [String: Any] = [
             CastJSONPayloadKeys.type: CastMessageType.stop.rawValue,
@@ -531,6 +532,62 @@ final class CastRequest: NSObject {
                 completion?(.write(errorMessage), nil)
             }
         }
+    }
+    
+    public func pause(for app: CastApp) {
+      guard outputStream != nil else { return }
+      
+      if let mediaStatus = currentMediaStatus {
+        sendMediaControl(.pause, for: app, mediaSessionId: mediaStatus.mediaSessionId)
+      }
+    }
+    
+    public func play(for app: CastApp) {
+      guard outputStream != nil else { return }
+      
+      if let mediaStatus = currentMediaStatus {
+        sendMediaControl(.play, for: app, mediaSessionId: mediaStatus.mediaSessionId)
+      }
+    }
+    
+    public func stopMedia(for app: CastApp) {
+      guard outputStream != nil else { return }
+      
+      if let mediaStatus = currentMediaStatus {
+        sendMediaControl(.stop, for: app, mediaSessionId: mediaStatus.mediaSessionId)
+      }
+    }
+    
+    public func seek(for app: CastApp, to currentTime: Float) {
+      guard outputStream != nil else { return }
+      
+      if let mediaStatus = currentMediaStatus {
+        sendSeek(to: currentTime, for: app, mediaSessionId: mediaStatus.mediaSessionId)
+      }
+    }
+    
+    private func sendSeek(to currentTime: Float, for app: CastApp, mediaSessionId: Int) {
+      let payload: [String: Any] = [
+        CastJSONPayloadKeys.type: CastMessageType.seek.rawValue,
+        CastJSONPayloadKeys.sessionId: app.sessionId,
+        CastJSONPayloadKeys.currentTime: currentTime,
+        CastJSONPayloadKeys.mediaSessionId: mediaSessionId
+      ]
+      
+      let request = CastRequest(id: nextRequestId(), namespace: .media, destinationId: app.transportId, payload: payload)
+      
+      send(request: request, response: nil)
+    }
+    
+    private func sendMediaControl(_ message: CastMessageType, for app: CastApp, mediaSessionId: Int) {
+      let payload: [String: Any] = [
+        CastJSONPayloadKeys.type: message.rawValue,
+        CastJSONPayloadKeys.mediaSessionId: mediaSessionId
+      ]
+      
+      let request = CastRequest(id: nextRequestId(), namespace: .media, destinationId: app.transportId, payload: payload)
+      
+      send(request: request, response: nil)
     }
     
     public func requestMediaStatusForApp(_ app: CastApp, mediaSessionId: Int) {
