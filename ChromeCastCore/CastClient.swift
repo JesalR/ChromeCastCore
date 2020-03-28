@@ -676,9 +676,7 @@ final class CastRequest: NSObject {
         }
     }
     
-    private func connect(to app: CastApp) {
-//        NSLog("Connecting to \(app.displayName)")
-        
+    func connect(to app: CastApp) {
         do {
             let payload = [CastJSONPayloadKeys.type: CastMessageType.connect.rawValue]
             let message = try jsonMessage(with: payload, namespace: .connection, destinationId: app.transportId)
@@ -687,6 +685,7 @@ final class CastRequest: NSObject {
             startBeating(id: app.transportId)
         } catch {
             NSLog("Error connecting to app: \(error)")
+            throw error
         }
     }
     
