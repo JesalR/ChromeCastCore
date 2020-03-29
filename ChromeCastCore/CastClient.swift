@@ -685,7 +685,6 @@ final class CastRequest: NSObject {
             startBeating(id: app.transportId)
         } catch {
             NSLog("Error connecting to app: \(error)")
-            throw error
         }
     }
     
