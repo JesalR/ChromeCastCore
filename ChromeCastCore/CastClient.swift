@@ -676,7 +676,7 @@ final class CastRequest: NSObject {
         }
     }
     
-    func connect(to app: CastApp) {
+    public func connect(to app: CastApp) {
         do {
             let payload = [CastJSONPayloadKeys.type: CastMessageType.connect.rawValue]
             let message = try jsonMessage(with: payload, namespace: .connection, destinationId: app.transportId)
